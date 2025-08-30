@@ -16,12 +16,24 @@ const PORT = process.env.PORT || 3001
 
 // Security middleware
 app.use(helmet())
+const allowedOrigin = process.env.FRONTEND_URL || "http://localhost:3000";
+console.log("CORS allowed origin:", allowedOrigin);
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      if (process.env.NODE_ENV === "development") {
+        return callback(null, true); // Allow all origins in development
+      }
+      if (origin === allowedOrigin) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
-  }),
-)
+  })
+);
 
 // Rate limiting
 const limiter = rateLimit({
