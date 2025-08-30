@@ -17,19 +17,20 @@ const PORT = process.env.PORT || 3001
 // Security middleware
 app.use(helmet())
 const allowedOrigin = process.env.FRONTEND_URL || "http://localhost:3000";
-console.log("CORS allowed origin:", allowedOrigin);
+const allowedOrigins = (process.env.FRONTEND_URLS || allowedOrigin).split(',');
+console.log("CORS allowed origins:", allowedOrigins);
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, etc.)
       if (!origin) return callback(null, true);
       if (process.env.NODE_ENV === "development") {
-        return callback(null, true); // Allow all origins in development
-      }
-      if (origin === allowedOrigin) {
         return callback(null, true);
       }
-      return callback(new Error("Not allowed by CORS"));
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      console.error(`Blocked by CORS: ${origin}`);
+      return callback(new Error(`Not allowed by CORS: ${origin}`));
     },
     credentials: true,
   })
