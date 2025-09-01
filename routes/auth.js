@@ -46,18 +46,18 @@ router.post("/signup", async (req, res, next) => {
 // Sign in
 router.post("/signin", async (req, res, next) => {
   try {
-    const { email, password } = req.body
+    const { username, password } = req.body
     console.log(req.body)
 
-    if (!email || !password) {
+    if (!username || !password) {
       return res.status(400).json({
         error: "Missing required fields",
-        message: "Email and password are required",
+        message: "Username and password are required",
       })
     }
 
     const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email,
+      username: username,
       password,
     })
     console.log(data)
