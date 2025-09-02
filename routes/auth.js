@@ -48,8 +48,29 @@ router.post("/signup", async (req, res, next) => {
 // Sign in
 router.post("/signin", async (req, res, next) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, id } = req.body;
     console.log(req.body);
+
+    // if (token) {
+    //   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    //     if (err) {
+    //       return res.status(403).json({
+    //         error: "Invalid token",
+    //         message: "Token is not valid",
+    //       });
+    //     }
+    //     return res.json({
+    //       data: {
+    //         message: "Signed in successfully",
+    //         user: {
+    //           id: user.id,
+    //           username: user.username,
+    //         },
+    //         token: jwtToken,
+    //       },
+    //     });
+    //   });
+    // }
 
     if (!username || !password) {
       return res.status(400).json({
@@ -65,7 +86,7 @@ router.post("/signin", async (req, res, next) => {
       .eq("username", username)
       .single();
 
-    if (error || !user) {
+    if (error || !user || id !== username) {
       return res.status(401).json({
         error: "Invalid credentials",
         message: "User not found",
@@ -74,7 +95,7 @@ router.post("/signin", async (req, res, next) => {
 
     // 2. Check password
     // const valid = await bcrypt.compare(password, user.password_hash);
-    const valid = (password === user.password_hash);
+    const valid = password === user.password_hash;
     if (!valid) {
       return res.status(401).json({
         error: "Invalid credentials",
@@ -83,7 +104,7 @@ router.post("/signin", async (req, res, next) => {
     }
 
     // 3. Create JWT
-    const token = jwt.sign(
+    const jwtToken = jwt.sign(
       {
         sub: user.id,
         username: user.username,
@@ -100,7 +121,7 @@ router.post("/signin", async (req, res, next) => {
           id: user.id,
           username: user.username,
         },
-        token,
+        token: jwtToken,
       },
     });
   } catch (error) {
